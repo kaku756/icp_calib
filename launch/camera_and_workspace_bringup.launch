@@ -68,7 +68,7 @@
 <!--        <arg name="camera_calibration_config_name" default="picker_robot__mask_hand_eye_calib__camera1_rotated.config"/> -->
 <!--        <arg name="ex_tf_samples_file" default="picker_robot__mask_hand_eye_calib__ex_tf_samples__camera1_rotated.config"/> -->
        <arg name="camera_name" default="camera3"/>
-       <arg name="depth_exposure" default="6000"/>
+<!--        <arg name="depth_exposure" default="6000"/> -->
        <arg name="serial_no" default="920312070140"/>
 
     </include>
@@ -82,7 +82,7 @@
 <!--        <arg name="camera_calibration_config_name" default="picker_robot__mask_hand_eye_calib__camera2_rotated.config"/> -->
 <!--        <arg name="ex_tf_samples_file" default="picker_robot__mask_hand_eye_calib__ex_tf_samples__camera2_rotated.config"/> -->
        <arg name="camera_name" default="camera4"/>
-       <arg name="depth_exposure" default="6000"/>
+<!--        <arg name="depth_exposure" default="6000"/> -->
        <arg name="serial_no" default="923322070726"/>
 
     </include>
