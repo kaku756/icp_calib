@@ -1,0 +1,105 @@
+<?xml version="1.0"?>
+
+<launch>
+
+  <arg name="use_mask_hand_eye_calibrator" default="true"/>
+  <arg name="camera_calibration_config_name" default="mask_hand_eye_calib__single_rotated.config"/>
+  <arg name="ex_tf_samples_file" default="ex_tf_samples.config"/>
+
+  <arg name="use_image_rotate" default="false"/>
+  <arg name="image_rotate_deg" default="270"/>
+
+
+
+  <arg name="serial_no" default=""/>
+  <arg name="camera_name" default="camera"/>
+  <arg name="no_camera_name" default="false"/>
+
+  <arg name="enable_depth" default="true"/>
+  <arg name="enable_infra1" default="true"/>
+  <arg name="enable_infra2" default="true"/>
+  <arg name="depth_exposure" default="-1"/>
+
+  <arg name="machine" default=""/>
+
+  <!-- RealSense D435i -->
+<!--
+  <include file="$(find realsense2_camera)/launch/rs_multiple_devices.launch">
+    <arg name="serial_no_camera1" value="841612070710"/>
+    <arg name="serial_no_camera2" value="843112072383"/>
+    <arg name="initial_reset" default="false"/>
+  </include>
+-->
+
+
+<!--   <include file="$(find finibo_bringup)/launch/_rs_color_camera_640x360.launch"> -->
+  <include file="$(find finibo_bringup)/launch/_rs_color_camera_1280x720_depth.launch">
+    <arg name="serial_no" value="$(arg serial_no)"/>
+    <arg name="camera" value="$(arg camera_name)"/>
+    <arg name="initial_reset" value="true"/>
+    <arg name="enable_depth" value="$(arg enable_depth)"/>
+    <arg name="enable_infra1" value="$(arg enable_infra1)"/>
+    <arg name="enable_infra2" value="$(arg enable_infra2)"/>
+    <arg name="depth_exposure" value="$(arg depth_exposure)"/>
+    <arg name="machine" value="$(arg machine)"/>
+  </include>
+
+
+
+  <!-- Convert some image from color camera -->
+<!--    <node ns="camera/color"
+      	name="image_proc_color" pkg="image_proc" type="image_proc">
+    </node>
+-->
+
+
+   <node if="$(arg use_image_rotate)"
+        ns="$(arg camera_name)" machine="$(arg machine)"
+        name="image_rotate" pkg="mask_image_proc" type="image_rotate" output="screen">
+        <param name="rotation_andle_deg" value="$(arg image_rotate_deg)" />
+        <remap from="camera_info" to="color/camera_info"/>
+        <remap from="image" to="color/image_raw"/>
+        <remap from="rotated_camera_info" to="rotated_color/camera_info"/>
+        <remap from="rotated_image" to="rotated_color/image_raw"/>
+    </node>
+
+
+
+<!--
+  <node ns="camera1/color"
+	name="image_proc_color" pkg="image_proc" type="image_proc">
+  </node>
+  <node ns="camera2/color"
+	name="image_proc_color" pkg="image_proc" type="image_proc">
+  </node>
+-->
+
+
+
+<!--     <node if="$(arg use_mask_hand_eye_calibrator)" -->
+<!--         ns="$(arg camera_name)" -->
+<!--         name="mask_hand_eye_calibrator" pkg="mask_image_proc" type="mask_hand_eye_calibrator" > -->
+
+<!--         <param name="calibration_config_file" value="$(find finibo_bringup)/config/$(arg camera_calibration_config_name)" /> -->
+<!--         <remap if="$(arg use_image_rotate)" from="camera_info" to="rotated_color/camera_info"/> -->
+
+<!--         <param name="camera_base_frame" value="$(arg camera_name)_link" /> -->
+
+
+<!--     </node> -->
+
+
+    <node if="$(arg use_mask_hand_eye_calibrator)"
+        ns="$(arg camera_name)"
+        name="mask_hand_eye_calibrator" pkg="mask_image_proc" type="mask_hand_eye_calibrator_2" output="screen" >
+
+        <param name="calibration_config_file" value="$(find finibo_bringup)/config/$(arg camera_calibration_config_name)" />
+        <param name="ex_tf_samples_file" value="$(find finibo_bringup)/config/$(arg ex_tf_samples_file)" />
+
+        <remap if="$(arg use_image_rotate)" from="camera_info" to="rotated_color/camera_info"/>
+        <param name="camera_base_frame" value="$(arg camera_name)_link" />
+
+    </node>
+
+
+</launch>

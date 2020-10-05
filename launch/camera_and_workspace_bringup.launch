@@ -1,0 +1,129 @@
+<launch>
+
+  <arg name="launch_picker_robot" default="true"/>
+  <arg name="launch_stower_robot" default="true"/>
+  <arg name="use_bcap" default="false"/>
+  <arg name="use_rc8_var_bridge" default="false"/>
+  <arg name="use_item_tracker" default="true"/>
+
+  <include file="$(find finibo_bringup)/launch/finibo_local.machine"/>
+
+
+  <!-- === robot description and static_tf ============================== -->
+  <group ns="picker_robot" >
+
+    <!-- locate wrobot -->
+    <param name="robot_description" command="$(find xacro)/xacro $(find finibo_description)/urdf/picker_robot.urdf.xacro"/>
+<!--     <param name="robot_description" command="$(find xacro)/xacro $(find fiinbo_description)/urdf/wrobot.urdf.xacro"/> -->
+
+    <node name="robot_state_publisher"
+        pkg="robot_state_publisher" type="robot_state_publisher">
+        <remap if="$(arg use_bcap)" from="joint_states" to="bcap_node/joint_states"/>
+    </node>
+
+
+  </group>
+
+
+
+
+
+
+
+
+  <!-- === picker robot ============================== -->
+
+  <group if="$(arg launch_picker_robot)" ns="picker_robot" >
+
+
+    <!-- === bCAP node ============================== -->
+    <include if="$(arg use_bcap)" file="$(find bcap_node)/launch/bcap_node.launch">
+      <arg name="ip_address" default="192.168.102.201"/>
+      <arg name="enable_track_encoder_buffer" default="true"/>
+      <arg name="track_encoder_buffer_mm_per_track_encoder_puls" default="0.108271075"/>
+      <arg name="track_encoder_buffer_conveyor_id" default="5"/>
+      <arg name="base_frame" default="picker_base_link"/>
+<!--       <arg name="track_encoder_buffer_mm_per_track_encoder_puls" default="0.108720575"/> -->
+<!--       <arg name="track_encoder_buffer_conveyor_id" default="3"/> -->
+    </include>
+
+    <!-- Launch fake_joint_driver -->
+    <group unless="$(arg use_bcap)">
+      <node name="fake_joint_driver" pkg="fake_joint_driver" type="fake_joint_driver_node"/>
+      <rosparam file="$(find finibo_bringup)/config/picker_controllers.yaml" />
+
+      <!-- Load and start joint trajecotory controller -->
+      <node name="controller_spawner" pkg="controller_manager"
+	    type="spawner" respawn="false" args="joint_state_controller joint_trajectory_controller"/>
+    </group>
+
+
+    <!-- === camera ============================== -->
+
+    <include file="$(find finibo_bringup)/launch/_realsense_camera.launch">
+       <arg name="machine" value="finibo_local"/>
+       <arg name="use_mask_hand_eye_calibrator" value="false"/>
+       <arg name="use_image_rotate" default="false"/>
+       <arg name="image_rotate_deg" default="0"/>
+<!--        <arg name="camera_calibration_config_name" default="picker_robot__mask_hand_eye_calib__camera1_rotated.config"/> -->
+<!--        <arg name="ex_tf_samples_file" default="picker_robot__mask_hand_eye_calib__ex_tf_samples__camera1_rotated.config"/> -->
+       <arg name="camera_name" default="camera3"/>
+       <arg name="depth_exposure" default="6000"/>
+       <arg name="serial_no" default="920312070140"/>
+
+    </include>
+
+
+    <include file="$(find finibo_bringup)/launch/_realsense_camera.launch">
+       <arg name="machine" value="finibo_local"/>
+       <arg name="use_mask_hand_eye_calibrator" value="false"/>
+       <arg name="use_image_rotate" default="false"/>
+       <arg name="image_rotate_deg" default="0"/>
+<!--        <arg name="camera_calibration_config_name" default="picker_robot__mask_hand_eye_calib__camera2_rotated.config"/> -->
+<!--        <arg name="ex_tf_samples_file" default="picker_robot__mask_hand_eye_calib__ex_tf_samples__camera2_rotated.config"/> -->
+       <arg name="camera_name" default="camera4"/>
+       <arg name="depth_exposure" default="6000"/>
+       <arg name="serial_no" default="923322070726"/>
+
+    </include>
+
+
+
+    <!-- Publish base to workspace frame -->
+    <node name="tf_base_link_to_workspace_link" pkg="tf2_ros" type="static_transform_publisher" args="0.28275 -0.01247 0.94623 0 0 0 base_link workspace_link"/>
+
+    <!-- Publish workspace to camera tf -->
+    <node name="camera1_transform_publisher" pkg="item_tracker" type="camera_transform_publisher.py">
+      <param name="config_file" value="$(find finibo_bringup)/config/camera1_transform.yaml"/>
+    </node>
+    <node name="camera2_transform_publisher" pkg="item_tracker" type="camera_transform_publisher.py">
+      <param name="config_file" value="$(find finibo_bringup)/config/camera2_transform.yaml"/>
+    </node>
+    <node name="camera3_transform_publisher" pkg="item_tracker" type="camera_transform_publisher.py">
+      <param name="config_file" value="$(find finibo_bringup)/config/camera3_transform.yaml"/>
+    </node>
+    <node name="camera4_transform_publisher" pkg="item_tracker" type="camera_transform_publisher.py">
+      <param name="config_file" value="$(find finibo_bringup)/config/camera4_transform.yaml"/>
+    </node>
+
+
+  </group>
+
+
+
+
+  <!-- === rviz ============================== -->
+
+ <node
+    name="rviz" pkg="rviz" type="rviz"
+    args="-d $(find finibo_camera_calib)/rviz/pc_camera_calib.rviz" />
+
+
+
+
+
+
+
+
+</launch>
+
