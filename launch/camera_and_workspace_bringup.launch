@@ -2,7 +2,7 @@
 
   <arg name="launch_picker_robot" default="true"/>
   <arg name="launch_stower_robot" default="true"/>
-  <arg name="use_bcap" default="false"/>
+  <arg name="use_bcap" default="true"/>
   <arg name="use_rc8_var_bridge" default="false"/>
   <arg name="use_item_tracker" default="true"/>
 
